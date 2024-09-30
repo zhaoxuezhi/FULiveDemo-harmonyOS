@@ -1,0 +1,44 @@
+{
+  "routerMap": [
+    {
+      "name": "BeautyPage",
+      "pageSourceFile": "src/main/ets/pages/BeautyPage.ets",
+      "buildFunction": "BeautyPageBuilder",
+      "data": {
+        "description": "this is BeautyPage"
+      }
+    },
+    {
+      "name": "StickerPage",
+      "pageSourceFile": "src/main/ets/pages/StickerPage.ets",
+      "buildFunction": "PageBuilder",
+      "data": {
+        "description": "this is Sticker"
+      }
+    },
+    {
+      "name": "SelectLocalMediaPage",
+      "pageSourceFile": "src/main/ets/pages/SelectLocalMediaPage.ets",
+      "buildFunction": "PageBuilder",
+      "data": {
+        "description": "this is SelectLocalMediaPage"
+      }
+    },
+    {
+      "name": "AssetsPreViewPage",
+      "pageSourceFile": "src/main/ets/pages/AssetsPreViewPage.ets",
+      "buildFunction": "PageBuilder",
+      "data": {
+        "description": "this is SelectLocalMediaPage"
+      }
+    },
+    {
+      "name": "ImageRenderPage",
+      "pageSourceFile": "src/main/ets/pages/ImageRenderPage.ets",
+      "buildFunction": "PageBuilder",
+      "data": {
+        "description": "this is ImageRenderPage"
+      }
+    }
+  ]
+}
