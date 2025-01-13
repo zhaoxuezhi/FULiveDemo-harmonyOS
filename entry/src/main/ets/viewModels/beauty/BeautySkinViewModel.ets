@@ -1,33 +1,25 @@
 import { FULogger, FUNMFileUtil, FUNMRenderKit } from '@faceunity/renderkit_nama'
-import { FUBeautySkin, modelValueType } from '../../constants/BeautyConstants';
+import { FUBeautySkin, modelValueType } from '../../constants/Constants';
 import { BeautySkinModel } from '../../models/beauty/BeautySkinModel'
+import { AssetsUtil } from '../../utils/AssetsUtil';
 
 const TAG: string = '[BeautySkinViewModel]';
+const skinJsonName = 'beauty/beauty_skin.json';
+const sandboxJsonName = 'beauty/v8.13.0/beauty_skin.json';
 
 export class BeautySkinViewModel {
   dataArray: BeautySkinModel[] = [];
 
   constructor() {
     let str: string | null = null;
-    const sbPath = `${FUNMFileUtil.fileDir}/beauty/beauty_skin.json`;
+    const sbPath = `${FUNMFileUtil.fileDir}/${sandboxJsonName}`;
     if (FUNMFileUtil.isExist(sbPath)) {
       str = FUNMFileUtil.readTextFormSandBox(sbPath);
     } else {
-      str = FUNMFileUtil.readTextFromRawfile('beauty/beauty_skin.json');
+      str = FUNMFileUtil.readTextFromRawfile(skinJsonName);
     }
     if (str) {
-      let maps: Record<string, modelValueType>[] = [];
-      try {
-        maps = JSON.parse(str);
-      } catch (err) {
-        FULogger.error(TAG,`JSON.parse fail，${JSON.stringify(err)}}`);
-        FUNMFileUtil.clearSandBoxFile(sbPath);
-        const rawStr = FUNMFileUtil.readTextFromRawfile('beauty/beauty_skin.json');
-        if (rawStr) {
-          maps = JSON.parse(rawStr)
-        }
-      }
-
+      let maps: Record<string, modelValueType>[] = JSON.parse(str);
       for (const map of maps) {
         const model = new BeautySkinModel(map);
         this.dataArray.push(model);
@@ -37,7 +29,11 @@ export class BeautySkinViewModel {
 
   saveSkinDataPersistently() {
     const str = JSON.stringify(this.dataArray);
-    FUNMFileUtil.writeFileToSandBox(`${FUNMFileUtil.fileDir}/beauty/beauty_skin.json`, str);
+    FUNMFileUtil.writeFileToSandBox(`${FUNMFileUtil.fileDir}/${sandboxJsonName}`, str);
+  }
+
+  static deleteSkinDataPersistently() {
+    FUNMFileUtil.clearSandBoxFile(`${FUNMFileUtil.fileDir}/${sandboxJsonName}`);
   }
 
   /// 设置单项美肤值

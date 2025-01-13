@@ -1,33 +1,24 @@
 import { FULogger, FUNMBeauty, FUNMFileUtil, FUNMRenderKit } from '@faceunity/renderkit_nama'
-import { FUBeautyShape, modelValueType } from '../../constants/BeautyConstants';
+import { FUBeautyShape, modelValueType } from '../../constants/Constants';
 import { BeautyShapeModel } from '../../models/beauty/BeautyShapeModel'
 
 const TAG: string = '[BeautyShapeViewModel]';
+const shapeJsonName = 'beauty/beauty_shape.json';
+const sandboxJsonName = 'beauty/v8.13.0/beauty_shape.json';
 
 export class BeautyShapeViewModel {
   dataArray: BeautyShapeModel[] = [];
 
   constructor() {
     let str: string | null = null;
-    const sbPath = `${FUNMFileUtil.fileDir}/beauty/beauty_shape.json`;
+    const sbPath = `${FUNMFileUtil.fileDir}/${sandboxJsonName}`;
     if (FUNMFileUtil.isExist(sbPath)) {
       str = FUNMFileUtil.readTextFormSandBox(sbPath);
     } else {
-      str = FUNMFileUtil.readTextFromRawfile('beauty/beauty_shape.json');
+      str = FUNMFileUtil.readTextFromRawfile(shapeJsonName);
     }
     if (str) {
-      let maps: Record<string, modelValueType>[] = [];
-      try {
-        maps = JSON.parse(str);
-      } catch (err) {
-        FULogger.error(TAG,`JSON.parse fail，${JSON.stringify(err)}}`);
-        FUNMFileUtil.clearSandBoxFile(sbPath);
-        const rawStr = FUNMFileUtil.readTextFromRawfile('beauty/beauty_shape.json');
-        if (rawStr) {
-          maps = JSON.parse(rawStr)
-        }
-      }
-
+      let maps: Record<string, modelValueType>[] = JSON.parse(str);
       for (const map of maps) {
         const model = new BeautyShapeModel(map);
         this.dataArray.push(model);
@@ -37,8 +28,12 @@ export class BeautyShapeViewModel {
 
   saveShapeDataPersistently() {
     const str = JSON.stringify(this.dataArray);
-    FUNMFileUtil.writeFileToSandBox(`${FUNMFileUtil.fileDir}/beauty/beauty_shape.json`, str);
+    FUNMFileUtil.writeFileToSandBox(`${FUNMFileUtil.fileDir}/${sandboxJsonName}`, str);
   }
+
+  static deleteShapeDataPersistently() {
+    FUNMFileUtil.clearSandBoxFile(`${FUNMFileUtil.fileDir}/${sandboxJsonName}`);
+  } 
 
   /// 设置单项美型值
   /// @param value 当前选中单项的值

@@ -1,4 +1,4 @@
-import { FUDevicePerformanceLevel, FUBeautySkin, modelValueType } from '../../constants/BeautyConstants'
+import { FUDevicePerformanceLevel, FUBeautySkin, modelValueType } from '../../constants/Constants'
 
 export class BeautySkinModel {
   name: string = '';

@@ -2,6 +2,8 @@ import { PixelBufferView } from './PixelBufferView';
 import { MorePopView } from './MorePopView';
 import { FPSFloatView, ViewFrame } from '../floatComponent/FPSFloatView';
 import { HeadToolBarController } from './HeadToolBarController';
+import { DynamicConfigInfo } from '../../DynamicConfigInfo';
+import { FUNMItem, FUNMRenderKit } from '@faceunity/renderkit_nama';
 
 export enum RenderType {
   RenderType_Home,
@@ -10,7 +12,9 @@ export enum RenderType {
   RenderType_More,
   RenderType_PixelBuffer,
   RenderType_Resolution,
-  RenderType_Picture
+  RenderType_Picture,
+  RenderType_LandMark,  // 点位开关
+  RenderType_Debug,
 }
 
 export type ResolutionValues = "480×640" | "720×1280" | "1080×1920"
@@ -30,8 +34,10 @@ const ImageMap: Map<RenderType, ResourceStr> = new Map([
 @Component
 export struct FUHeadToolBar {
   @Consume('pathInfos') pathInfos: NavPathStack
-  @Prop leftRenderTypes: RenderType[];
-  @Prop rightRenderTypes: RenderType[];
+  leftRenderTypes: RenderType[] = [];
+  rightRenderTypes: RenderType[] = [];
+  @Prop debugTagSelect : boolean = false
+  @State landMarkSelect : boolean = false
   @State showMorePopView: boolean = false
   @State showFpsView: boolean = false
   @State resolutionValue: ResolutionValues = '720×1280'
@@ -40,6 +46,10 @@ export struct FUHeadToolBar {
   itemOnClick: ((type: RenderType, value: ResolutionValues | PixelBufferValues | undefined) => void) | undefined
 
   aboutToAppear(): void {
+    if(DynamicConfigInfo.showsLandmarks && !this.leftRenderTypes.includes(RenderType.RenderType_LandMark)) {
+      this.leftRenderTypes.push(RenderType.RenderType_LandMark)
+    }
+
     if (this.controller) {
       this.controller.onScreenTopAction = () => {
         if (this.showMorePopView) {
@@ -49,6 +59,14 @@ export struct FUHeadToolBar {
       this.controller.morePopViewIsShowing = (): boolean => {
         return this.showMorePopView
       }
+    }
+  }
+
+  aboutToDisappear(): void {
+    if (FUNMRenderKit.sharedInstance().landmark) {
+      FUNMRenderKit.sharedInstance().landmark?.destroy()
+      FUNMRenderKit.sharedInstance().landmark = undefined;
+      FUNMRenderKit.sharedInstance().refreshAutoRenderInput()
     }
   }
 
@@ -90,6 +108,46 @@ export struct FUHeadToolBar {
               this.itemOnClick?.(item, value)
             }
           })
+            .margin({ right: 20 })
+        } else if (item === RenderType.RenderType_LandMark) {
+          Text(`点位${this.landMarkSelect ? '开启' : '关闭'}`)
+            .backgroundColor(this.landMarkSelect ? Color.White : Color.Transparent)
+            .fontColor(this.landMarkSelect ? '0x2C2E30' : Color.White)
+            .fontSize(11)
+            .fontWeight(FontWeight.Medium)
+            .padding(3)
+            .borderRadius(4)
+            .borderWidth(1.5)
+            .borderColor(Color.White)
+            .onClick((event: ClickEvent) => {
+              this.landMarkSelect = !this.landMarkSelect
+              if(this.landMarkSelect) {
+                if (!FUNMRenderKit.sharedInstance().landmark) {
+                  const landmark = new FUNMItem({ rawfilePath: 'landmarks.bundle' });
+                  FUNMRenderKit.sharedInstance().landmark = landmark;
+                }
+              } else {
+                if (FUNMRenderKit.sharedInstance().landmark) {
+                  FUNMRenderKit.sharedInstance().landmark?.destroy()
+                  FUNMRenderKit.sharedInstance().landmark = undefined;
+                }
+              }
+              FUNMRenderKit.sharedInstance().refreshAutoRenderInput()
+              this.handleClick(event, item)
+            })
+        } else if (item === RenderType.RenderType_Debug) {
+          Text('DEBUG')
+            .backgroundColor(this.debugTagSelect ? Color.White : Color.Transparent)
+            .fontColor(this.debugTagSelect ? '0x2C2E30' : Color.White)
+            .fontSize(11)
+            .fontWeight(FontWeight.Medium)
+            .padding(3)
+            .borderRadius(4)
+            .borderWidth(1.5)
+            .borderColor(Color.White)
+            .onClick((event: ClickEvent) => {
+              this.handleClick(event, item)
+            })
         } else {
           Image(ImageMap.get(item))
             .width(33)
@@ -133,7 +191,7 @@ export struct FUHeadToolBar {
           FPSFloatView()
             .padding({ left: 15, top: 10 })
             .width('100%')
-            .height(100)
+            // .height(100)
         }
         if (this.showMorePopView) {
           // 内部有坐标计算 itemRelateWindowFrame 以window坐标来计算的
@@ -145,6 +203,7 @@ export struct FUHeadToolBar {
                 this.resolutionValue = value as ResolutionValues
               }
               this.itemOnClick?.(type, value)
+              this.showMorePopView = false;
             }
           })
             .width('80%')

@@ -1,4 +1,4 @@
-import { modelValueType } from '../../constants/BeautyConstants'
+import { modelValueType } from '../../constants/Constants'
 
 export class BeautyFilterModel {
   filterName: string = '';

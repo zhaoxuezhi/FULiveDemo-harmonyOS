@@ -2,15 +2,31 @@
   "routerMap": [
     {
       "name": "BeautyPage",
-      "pageSourceFile": "src/main/ets/pages/BeautyPage.ets",
-      "buildFunction": "BeautyPageBuilder",
+      "pageSourceFile": "src/main/ets/pages/modules/BeautyPage.ets",
+      "buildFunction": "PageBuilder",
       "data": {
         "description": "this is BeautyPage"
       }
     },
     {
+      "name": "ImageRenderPage",
+      "pageSourceFile": "src/main/ets/pages/media/ImageRenderPage.ets",
+      "buildFunction": "PageBuilder",
+      "data": {
+        "description": "this is ImageRenderPage"
+      }
+    },
+    {
+      "name": "VideoRenderPage",
+      "pageSourceFile": "src/main/ets/pages/media/VideoRenderPage.ets",
+      "buildFunction": "PageBuilder",
+      "data": {
+        "description": "this is VideoRenderPage"
+      }
+    },
+    {
       "name": "StickerPage",
-      "pageSourceFile": "src/main/ets/pages/StickerPage.ets",
+      "pageSourceFile": "src/main/ets/pages/modules/StickerPage.ets",
       "buildFunction": "PageBuilder",
       "data": {
         "description": "this is Sticker"
@@ -18,26 +34,42 @@
     },
     {
       "name": "SelectLocalMediaPage",
-      "pageSourceFile": "src/main/ets/pages/SelectLocalMediaPage.ets",
+      "pageSourceFile": "src/main/ets/pages/media/SelectLocalMediaPage.ets",
       "buildFunction": "PageBuilder",
       "data": {
         "description": "this is SelectLocalMediaPage"
       }
     },
     {
-      "name": "AssetsPreViewPage",
-      "pageSourceFile": "src/main/ets/pages/AssetsPreViewPage.ets",
+      "name": "MakeUpPage",
+      "pageSourceFile": "src/main/ets/pages/modules/MakeUpPage.ets",
       "buildFunction": "PageBuilder",
       "data": {
-        "description": "this is SelectLocalMediaPage"
+        "description": "美妆"
       }
     },
     {
-      "name": "ImageRenderPage",
-      "pageSourceFile": "src/main/ets/pages/ImageRenderPage.ets",
+      "name": "DistortingMirrorPage",
+      "pageSourceFile": "src/main/ets/pages/modules/SimpleStickerPage.ets",
       "buildFunction": "PageBuilder",
       "data": {
-        "description": "this is ImageRenderPage"
+        "description": "哈哈镜"
+      }
+    },
+    {
+      "name": "FunnyBigHead",
+      "pageSourceFile": "src/main/ets/pages/modules/SimpleStickerPage.ets",
+      "buildFunction": "PageBuilder",
+      "data": {
+        "description": "搞笑大头"
+      }
+    },
+    {
+      "name": "SegmentationPage",
+      "pageSourceFile": "src/main/ets/pages/modules/SegmentationPage.ets",
+      "buildFunction": "PageBuilder",
+      "data": {
+        "description": "人像分割"
       }
     }
   ]

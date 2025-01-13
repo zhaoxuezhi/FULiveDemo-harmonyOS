@@ -1,19 +1,17 @@
 import { FULogger } from '@faceunity/renderkit_nama';
+import { RenderKitService } from '../../service/RenderKitService';
 
 @Component
 export struct CaptureButton {
+  onClickCallback: (() => void) | undefined = undefined;
+  onLongPressStartCallback: (() => void) | undefined = undefined;
+  onLongPressEndCallback: (() => void) | undefined = undefined;
   @State private isLongPressed: boolean = false;
   @State private progressValue: number = 0;
   private longPressTimer: number = 0;
   private timerGo: number = 0;
   private readonly LONG_PRESS_DURATION: number = 10; // 10s
   @State private animationPadding: number = 2
-  @Require onClickCallback: () => void = () => {
-  };
-  @Require onLongPressStartCallback: () => void = () => {
-  };
-  @Require onLongPressEndCallback: () => void = () => {
-  };
 
   build() {
     RelativeContainer() {
@@ -27,22 +25,25 @@ export struct CaptureButton {
             TapGesture()
               .onAction(() => {
                 FULogger.info('CaptureButton', '响应了点击手势')
-                this.onClickCallback();
+                if (this.onClickCallback) {
+                  this.onClickCallback();
+                } else {
+                  RenderKitService.sharedInstance().captureImageFromAutoRender = true;
+                }
               }),
-            // TODO: 1.0.0版本暂时不支持视频录制，UI先不支持长按
-            // LongPressGesture({ repeat: false, duration: 300 })
-            //   .onAction((event: GestureEvent) => {
-            //     FULogger.info('CaptureButton', '响应了长按手势 - 开始')
-            //     this.startLongPress();
-            //   })
-            //   .onActionEnd(() => {
-            //     FULogger.info('CaptureButton', '响应了长按手势 - 结束')
-            //     this.endLongPress();
-            //   })
-            //   .onActionCancel(() => {
-            //     FULogger.info('CaptureButton', '响应了长按手势 - 取消')
-            //     this.endLongPress();
-            //   })
+            LongPressGesture({ repeat: false, duration: 300 })
+              .onAction((event: GestureEvent) => {
+                FULogger.info('CaptureButton', '响应了长按手势 - 开始')
+                this.startLongPress();
+              })
+              .onActionEnd(() => {
+                FULogger.info('CaptureButton', '响应了长按手势 - 结束')
+                this.endLongPress();
+              })
+              .onActionCancel(() => {
+                FULogger.info('CaptureButton', '响应了长按手势 - 取消')
+                this.endLongPress();
+              })
           )
         )
       if (this.isLongPressed) {
@@ -71,7 +72,11 @@ export struct CaptureButton {
     this.isLongPressed = true;
     this.progressValue = 0;
     this.timerGo = 0;
-    this.onLongPressStartCallback();
+    if (this.onLongPressStartCallback) {
+      this.onLongPressStartCallback();
+    } else {
+      RenderKitService.sharedInstance().startRecordVideoFromAutoRender = true;
+    }
     animateTo({
       duration: 100,
       curve: Curve.Linear,
@@ -85,7 +90,7 @@ export struct CaptureButton {
     // Start the timer
     this.longPressTimer = setInterval(() => {
       if (this.progressValue >= 100) {
-        clearTimeout(this.longPressTimer);
+        this.endLongPress();
         return
       }
       this.timerGo += 100
@@ -99,7 +104,11 @@ export struct CaptureButton {
     if (this.isLongPressed) {
       this.isLongPressed = false;
       this.progressValue = 0;
-      this.onLongPressEndCallback();
+      if (this.onLongPressEndCallback) {
+        this.onLongPressEndCallback();
+      } else {
+        RenderKitService.sharedInstance().stopRecordVideoFromAutoRender = true;
+      }
 
       clearTimeout(this.longPressTimer);
 

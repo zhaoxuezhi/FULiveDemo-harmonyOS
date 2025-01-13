@@ -1,0 +1,146 @@
+
+import { FUBackButtonRow } from '../../components/common/FUBackButton';
+import { RouterParamsModel } from '../../router/RouterModel';
+import FUSafeAreaUtil from '../../utils/FUSafeAreaUtil';
+import { requestMediaPermission } from '../../utils/RequestPermission';
+import { AssetsType, AssetsUtil } from '../../utils/AssetsUtil';
+import { BeautyPageName, ImageRenderType, MakeupPageName, StickerPageName } from '../../constants/Constants';
+
+interface IPOP {
+  from: string
+}
+
+interface ButtonItem {
+  type: AssetsType
+  img: ResourceStr
+  title: string
+}
+
+@Builder
+export function PageBuilder(name: string, param: RouterParamsModel | undefined) {
+  SelectLocalMediaPage({ routerParams: param })
+}
+
+@Component
+export struct SelectLocalMediaPage {
+  @Consume('pathInfos') pageInfos: NavPathStack
+  routerParams: RouterParamsModel | undefined
+  private fromPageName: string = '';
+
+  aboutToAppear() {
+    this.fromPageName = (this.routerParams?.params as IPOP).from;
+    console.log(`from: ${this.fromPageName}`)
+  }
+
+  @Builder
+  buttonItem(item: ButtonItem) {
+    Row() {
+      Image(item.img)
+        .size({ width: 26, height: 25 })
+        .objectFit(ImageFit.Contain)
+      Text(item.title)
+        .fontColor(Color.White)
+        .fontSize(15)
+        .margin({ left: 10 })
+    }
+    .size({ width: 235, height: 48 })
+    .borderRadius(24)
+    .backgroundImage($rawfile('pickerImage/media_picker_button_background@2x.png'))
+    .backgroundImageSize({ width: 235, height: 48 })
+    .justifyContent(FlexAlign.Center)
+    .onClick(async () => {
+      //TODO: 点击调用本地相册
+      const res = await requestMediaPermission()
+      if (res) {
+        const assetData = await AssetsUtil.requestAssets({ type: item.type, onlyUri: false, compress: true })
+        if (!assetData?.uri) {
+          return
+        }
+
+        // 人像分割
+        if (this.fromPageName === 'SegmentationView') {
+          this.pageInfos.pop({ assetData }, true)
+          return
+        }
+
+        // TODO：将选择的相册资源回传到对应的功能页面(待完善视频)
+        const renderType = this.analyzeTargetPageName(this.fromPageName);
+        const routerParams: RouterParamsModel = {
+          params: Object({ renderType, assetData })
+        }
+        if (item.type === 'photo') {
+          this.pageInfos.pushPath({ name: 'ImageRenderPage', param: routerParams })
+        } else {
+          this.pageInfos.pushPath({ name: 'VideoRenderPage', param: routerParams })
+        }
+      }
+    })
+  }
+
+  build() {
+    NavDestination() {
+      RelativeContainer() {
+        Row() {
+          FUBackButtonRow()
+        }
+        .id('__FUBackButtonRow__')
+
+        Column({ space: 40 }) {
+          Text('请从相册选择图片或视频')
+            .fontColor(Color.White)
+            .margin({ bottom: 20 })
+
+          this.buttonItem({
+            type: 'photo',
+            img: $rawfile('pickerImage/media_picker_image_selection@2x.png'),
+            title: '选择图片'
+          })
+          this.buttonItem({
+            type: 'video',
+            img: $rawfile('pickerImage/media_picker_video_selection@2x.png'),
+            title: '选择视频'
+          })
+        }
+        .id('__mainView__')
+        .alignRules({
+          top: {
+            anchor: '__FUBackButtonRow__',
+            align: VerticalAlign.Bottom
+          },
+          bottom: {
+            anchor: '__container__',
+            align: VerticalAlign.Bottom
+          }
+        })
+        .justifyContent(FlexAlign.Center)
+        .width('100%')
+      }
+      .backgroundColor(Color.Black)
+      .padding({
+        top: FUSafeAreaUtil.getStatusBarHeight(),
+        bottom: FUSafeAreaUtil.getBottomBarHeight()
+      })
+    }
+    .onBackPressed(() => {
+      /**
+       * 返回 false 表示重新实现返回逻辑
+       * pop({}, true) 参数不能省略，有参数会回调 onPop 函数
+       */
+      this.pageInfos.pop({}, true)
+      return true
+    })
+    .hideTitleBar(true)
+  }
+
+  private analyzeTargetPageName(fromName: string): ImageRenderType {
+    // TODO: 待完善
+    if (fromName === BeautyPageName) {
+      return ImageRenderType.Beauty;
+    } else if (fromName === StickerPageName) {
+      return ImageRenderType.Sticker;
+    } else if (fromName === MakeupPageName) {
+      return ImageRenderType.Makeup
+    }
+    return ImageRenderType.Beauty;
+  }
+}

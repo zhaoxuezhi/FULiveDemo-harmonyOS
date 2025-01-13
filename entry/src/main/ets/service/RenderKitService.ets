@@ -1,39 +1,75 @@
 import {
-  FUNMRenderKit,
-  FUNMSetupConfig,
+  FUAIFACEALGORITHMCONFIG,
+  FUAITYPE,
+  FULogger,
   FULOGLEVEL,
   FUNMAIKit,
-  FUAITYPE,
-  FUNMFaceProcessorDetectMode,
-  FUNMBeautyPropertyMode,
-  FUNMModeKey,
-  FUNMBeauty,
-  FUNMRenderInput,
-  FUNMRenderOutput,
-  FUNMFaceProcessorFaceLandmarkQuality,
   FUNMAutoRenderDelegate,
+  FUNMBeauty,
+  FUNMBeautyPropertyMode,
+  FUNMFaceProcessorDetectMode,
+  FUNMFaceProcessorFaceLandmarkQuality,
+  FUNMFileUtil,
   FUNMFPSDelegate,
-  FUNMNumberUtil,
-  FUNMOutputType,
-  FUNMOutputDataType,
+  FUNMImageOrientation,
   FUNMImageUtil,
-  FULogger,
-  FUNMImageOrientation
-} from '@faceunity/renderkit_nama'
-import { g_auth_package } from '../auth/FUNMAuth'
+  FUNMModeKey,
+  FUNMNumberUtil,
+  FUNMOutputDataType,
+  FUNMOutputType,
+  FUNMRenderKit,
+  FUNMRenderOutput,
+  FUNMSetupConfig
+} from '@faceunity/renderkit_nama';
+import fs from '@ohos.file.fs';
+import { VideoRecorder } from '@faceunity/mediakit';
+import { g_auth_package } from '../auth/FUNMAuth';
 import { image } from '@kit.ImageKit';
 import { promptAction } from '@kit.ArkUI';
+import { photoAccessHelper } from '@kit.MediaLibraryKit';
+import { fileIo } from '@kit.CoreFileKit';
 
 export const AutoRenderResolution: Size = { width: 1280, height: 720 };
 
-export class RenderKitService implements FUNMAutoRenderDelegate, FUNMFPSDelegate {
-  captureImageFromAutoRender: boolean = false;
-  private _shouldDoRender: boolean = true;
-  private static instance: RenderKitService | undefined = undefined;
+const TAG: string = '[RenderKitService]';
 
-  set shouldDoRender(value: boolean) {
-    this._shouldDoRender = value;
-    FUNMRenderKit.sharedInstance().refreshAutoRenderInput();
+export class RenderKitService implements FUNMAutoRenderDelegate, FUNMFPSDelegate {
+  private static instance: RenderKitService | undefined = undefined;
+  captureImageFromAutoRender: boolean = false;
+  stopRecordVideoFromAutoRender: boolean = false;
+  private _startRecordVideoFromAutoRender: boolean = false;
+  private _shouldDoRender: boolean = true;
+  private _recordFile: fileIo.File | undefined = undefined;
+  private _recorder: VideoRecorder | undefined = undefined;
+  private _videoFrameCount = 0;
+
+  private constructor() {
+  }
+
+  set startRecordVideoFromAutoRender(value: boolean) {
+    const creatFile = async () => {
+      if (this._recordFile === undefined) {
+        this._recordFile = FUNMFileUtil.createSafeFileToWrite(this.videoUri());
+        if (this._recordFile === undefined) {
+          FULogger.error('RenderKitService create _recordFile fail');
+          return;
+        }
+        const camaraResolution = FUNMRenderKit.sharedInstance().autoRenderConfig.camaraResolution;
+        this._recorder = new VideoRecorder(camaraResolution.height, camaraResolution.width, 10000000, 30, 20971520, 0, 'video/avc');
+        this._recorder.start(this._recordFile.fd);
+        this._startRecordVideoFromAutoRender = true;
+      }
+    }
+
+    if (value) {
+      creatFile();
+    } else {
+      this._startRecordVideoFromAutoRender = false;
+    }
+  }
+
+  get startRecordVideoFromAutoRender() {
+    return this._startRecordVideoFromAutoRender;
   }
 
   set showFPS(value: boolean) {
@@ -51,7 +87,11 @@ export class RenderKitService implements FUNMAutoRenderDelegate, FUNMFPSDelegate
     return RenderKitService.instance;
   }
 
-  private constructor() {
+  shouldDoRender(value: boolean, autoRender: boolean) {
+    this._shouldDoRender = value;
+    if (autoRender) {
+      FUNMRenderKit.sharedInstance().refreshAutoRenderInput();
+    }
   }
 
   didAutoRender(renderOutput: FUNMRenderOutput) {
@@ -62,7 +102,7 @@ export class RenderKitService implements FUNMAutoRenderDelegate, FUNMFPSDelegate
     return this._shouldDoRender;
   }
 
-  renderFPSInfo(fps: number, renderTime: number) {
+  autoRenderFPSInfo(fps: number, renderTime: number) {
     AppStorage.set('FPSValue', FUNMNumberUtil.formatNumber(fps, 0, true));
     AppStorage.set('renderTime', FUNMNumberUtil.formatNumber(renderTime, 0, true));
   }
@@ -73,6 +113,7 @@ export class RenderKitService implements FUNMAutoRenderDelegate, FUNMFPSDelegate
     const config = new FUNMSetupConfig(byte.buffer as ArrayBuffer, byte.length);
     FUNMRenderKit.setup(config);
     FUNMRenderKit.setLogLevel(FULOGLEVEL.FU_LOG_LEVEL_INFO);
+    FUNMRenderKit.sharedInstance().autoRenderConfig.outputType = FUNMOutputType.XCOMPONENT;
     FUNMRenderKit.sharedInstance().autoRenderConfig.isFrontCamera = true;
     FUNMRenderKit.sharedInstance().autoRenderConfig.camaraResolution = AutoRenderResolution;
     FUNMRenderKit.sharedInstance().autoRenderConfig.fps = 30;
@@ -84,11 +125,16 @@ export class RenderKitService implements FUNMAutoRenderDelegate, FUNMFPSDelegate
   }
 
   // 初始化AIKit
-   initAIKit() {
+  initAIKit() {
+    // faceAI 配置
+    const faceAiConfig: FUAIFACEALGORITHMCONFIG =
+      FUAIFACEALGORITHMCONFIG.FUAIFACE_DISABLE_DEL_SPOT | FUAIFACEALGORITHMCONFIG.FUAIFACE_DISABLE_ARMESHV2
+    FUNMAIKit.shareKit().setFaceAlgorithmConfig(faceAiConfig)
     FUNMAIKit.loadAIModeWithAIType(FUAITYPE.FUAITYPE_FACEPROCESSOR, { rawfilePath: 'ai_face_processor.bundle' });
     FUNMAIKit.shareKit().maxTrackFaces = 2;
     FUNMAIKit.shareKit().faceProcessorDetectMode = FUNMFaceProcessorDetectMode.Video;
     FUNMAIKit.shareKit().faceProcessorFaceLandmarkQuality = FUNMFaceProcessorFaceLandmarkQuality.High;
+    FUNMAIKit.shareKit().faceRaceDetect = true
   }
 
   loadBeauty() {
@@ -125,11 +171,12 @@ export class RenderKitService implements FUNMAutoRenderDelegate, FUNMFPSDelegate
     }
   }
 
-  async changeCamaraResolution(resolution: Size, displayResolutionHandle:() => void) {
+  async changeCamaraResolution(resolution: Size, displayResolutionHandle: () => void) {
     FUNMRenderKit.sharedInstance().autoRenderConfig.camaraResolution = resolution;
     await FUNMRenderKit.stopAutoRender();
     RenderKitService.sharedInstance().clearXComponent();
     displayResolutionHandle();
+    FUNMRenderKit.prepareChangeCamaraResolution();
     await FUNMRenderKit.startAutoRender();
   }
 
@@ -146,16 +193,20 @@ export class RenderKitService implements FUNMAutoRenderDelegate, FUNMFPSDelegate
   }
 
   async startRenderWithDefaultSetting() {
+    FUNMAIKit.shareKit().isFrontCamera = true;
     // 强制为前置
     FUNMRenderKit.sharedInstance().autoRenderConfig.isFrontCamera = true;
     // 强制为预置分辨率
     FUNMRenderKit.sharedInstance().autoRenderConfig.camaraResolution = AutoRenderResolution;
+    FUNMRenderKit.prepareChangeCamaraResolution();
     AppStorage.set('resolution', '720×1280')
-    await FUNMRenderKit.startAutoRender();
+    const res = await FUNMRenderKit.startAutoRender();
+    FULogger.info(TAG, `startAutoRender result：${res}`);
   }
 
   async startRender() {
-    await FUNMRenderKit.startAutoRender();
+    const res = await FUNMRenderKit.startAutoRender();
+    FULogger.info(TAG, `startAutoRender result：${res}`);
   }
 
   async stopRender() {
@@ -166,18 +217,28 @@ export class RenderKitService implements FUNMAutoRenderDelegate, FUNMFPSDelegate
     await FUNMRenderKit.destroy();
   }
 
+  async destroyRenderCamera() {
+    await FUNMRenderKit.destroyAutoRenderCamera();
+  }
+
+  releaseGLResource() {
+    FUNMRenderKit.releaseGLResource();
+  }
+
   private async captureImageFromAutoRenderHandle(renderOutput: FUNMRenderOutput) {
     const outputType = FUNMRenderKit.sharedInstance().autoRenderConfig.outputType;
-    if (this.captureImageFromAutoRender && outputType !== FUNMOutputType.XCOMPONENT_WITH_RGBA_BUFFER) {
-      FUNMRenderKit.sharedInstance().autoRenderConfig.outputType = FUNMOutputType.XCOMPONENT_WITH_RGBA_BUFFER;
+    if ((this.captureImageFromAutoRender || this.startRecordVideoFromAutoRender) &&
+      outputType !== FUNMOutputType.XCOMPONENT_WITH_RGBA_BUFFER) {
+      FUNMRenderKit.sharedInstance().autoRenderConfig.outputType = FUNMOutputType.XCOMPONENT_WITH_NV21_BUFFER;
       FUNMRenderKit.sharedInstance().refreshAutoRenderInput();
     }
 
-    if (this.captureImageFromAutoRender && renderOutput.dataType === FUNMOutputDataType.RGBA_BUFFER && renderOutput.pixelBuffer) {
-      FULogger.info('YYYY 保存照片调用了');
+    if (this.captureImageFromAutoRender && renderOutput.dataType === FUNMOutputDataType.NV21_BUFFER &&
+    renderOutput.pixelBuffer) {
       this.captureImageFromAutoRender = false;
-      let pixelMap = FUNMImageUtil.getRGBAPixelMapFromPixelBuffer(renderOutput.pixelBuffer, image.PixelMapFormat.RGBA_8888,
-        { width: renderOutput.outputSize.width, height: renderOutput.outputSize.height });
+      let pixelMap =
+        FUNMImageUtil.getRGBAPixelMapFromPixelBuffer(renderOutput.pixelBuffer, image.PixelMapFormat.NV21,
+          { width: renderOutput.outputSize.width, height: renderOutput.outputSize.height });
       const encodeBuffer = await FUNMImageUtil.encodePixelMapToGetFileBuffer(pixelMap, 'image/jpeg', 98);
       await pixelMap.release();
       await FUNMImageUtil.saveToPhotoAlbum(encodeBuffer);
@@ -185,6 +246,46 @@ export class RenderKitService implements FUNMAutoRenderDelegate, FUNMFPSDelegate
 
       FUNMRenderKit.sharedInstance().autoRenderConfig.outputType = FUNMOutputType.XCOMPONENT;
       FUNMRenderKit.sharedInstance().refreshAutoRenderInput();
+    } else if (this.startRecordVideoFromAutoRender && renderOutput.dataType === FUNMOutputDataType.NV21_BUFFER &&
+    renderOutput.pixelBuffer) {
+      if (this.stopRecordVideoFromAutoRender) {
+        this.stopRecordVideoFromAutoRender = false;
+        this.startRecordVideoFromAutoRender = false;
+
+        this._recorder?.stop();
+        if (this._recordFile) {
+          fs.closeSync(this._recordFile.fd);
+          this._recordFile = undefined;
+        }
+        // 保存的视频帧数至少为1再保存到相册
+        if (this._videoFrameCount >= 1) {
+          await this.saveVideoToPhotoAlbum();
+        }
+
+        FUNMRenderKit.sharedInstance().autoRenderConfig.outputType = FUNMOutputType.XCOMPONENT;
+        FUNMRenderKit.sharedInstance().refreshAutoRenderInput();
+      } else {
+        this._recorder?.pushBuffer(renderOutput.pixelBuffer, renderOutput.pixelBuffer.byteLength);
+        this._videoFrameCount++;
+      }
     }
+  }
+
+  private async saveVideoToPhotoAlbum() {
+    let context = getContext();
+    let phAccessHelper = photoAccessHelper.getPhotoAccessHelper(context);
+    let assetChangeRequest: photoAccessHelper.MediaAssetChangeRequest =
+      photoAccessHelper.MediaAssetChangeRequest.createVideoAssetRequest(context, this.videoUri());
+    try {
+      await phAccessHelper.applyChanges(assetChangeRequest);
+      promptAction.showToast({ message: '视频保存成功！' });
+    } catch (err) {
+      FULogger.error(TAG, 'save video fail', err.name, err.message);
+      promptAction.showToast({ message: '视频保存失败！' });
+    }
+  }
+
+  private videoUri(): string {
+    return `${FUNMFileUtil.fileDir}/render.mp4`;
   }
 }

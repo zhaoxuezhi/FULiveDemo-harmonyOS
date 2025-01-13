@@ -6,6 +6,7 @@
   "author": "",
   "license": "",
   "dependencies": {
-    '@faceunity/renderkit_nama': "1.0.0"
+    '@faceunity/renderkit_nama': "2.0.0",
+    '@faceunity/mediakit': "file:./lib/mediakit.har"
   }
 }
