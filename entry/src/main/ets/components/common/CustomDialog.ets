@@ -1,4 +1,4 @@
-import { SELECTCOLOR } from '../../constants/BeautyConstants'
+import { SELECTCOLOR } from '../../constants/Constants'
 
 @CustomDialog
 export struct CustomDialogCancelOrConfirm {

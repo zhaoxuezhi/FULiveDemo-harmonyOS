@@ -1,7 +1,7 @@
 import { AbilityConstant, UIAbility, Want } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { window } from '@kit.ArkUI';
-import { FUNMGlobalContext } from '@faceunity/renderkit_nama'
+import { FUNMGlobalContext, FUNMRenderKit } from '@faceunity/renderkit_nama'
 import { BusinessError } from '@kit.BasicServicesKit';
 
 export default class EntryAbility extends UIAbility {
@@ -11,6 +11,7 @@ export default class EntryAbility extends UIAbility {
 
   onDestroy(): void {
     hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onDestroy');
+    FUNMRenderKit.destroy()
   }
 
   onWindowStageCreate(windowStage: window.WindowStage): void {
@@ -39,7 +40,7 @@ export default class EntryAbility extends UIAbility {
       console.info('Succeeded in setting the screen to be always on.');
     });
 
-    windowStage.loadContent('pages/Index', (err) => {
+    windowStage.loadContent('pages/modules/Index', (err) => {
       if (err.code) {
         hilog.error(0x0000, 'testTag', 'Failed to load the content. Cause: %{public}s', JSON.stringify(err) ?? '');
         return;

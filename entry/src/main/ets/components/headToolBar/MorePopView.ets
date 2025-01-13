@@ -70,8 +70,7 @@ export struct MorePopView {
         Divider()
           .margin({ top: 15, bottom: 15 })
         Row() {
-          // Text('载入图片或视频')
-          Text('载入图片')
+          Text('载入图片或视频')
             .fontSize(13)
             .fontColor(Color.White)
           Image($rawfile('common/render_select_media@2x.png'))
@@ -87,7 +86,8 @@ export struct MorePopView {
       .padding(15)
       .backgroundColor('#74555555')
       .borderRadius(5)
-      .onClick(() => {})
+      .onClick(() => {
+      })
     }
     .padding({ left: 20 })
     .width('100%')

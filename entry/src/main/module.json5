@@ -34,6 +34,13 @@
         "usedScene": {
           "when": "inuse"
         }
+      },
+      {
+        "name": "ohos.permission.INTERNET",
+        "reason": "$string:app_name",
+        "usedScene": {
+          "when": "always",
+        }
       }
     ],
     "abilities": [

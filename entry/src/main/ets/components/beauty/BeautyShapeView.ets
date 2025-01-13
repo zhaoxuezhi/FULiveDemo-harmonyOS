@@ -1,5 +1,5 @@
 import { FUNMNumberUtil } from '@faceunity/renderkit_nama';
-import { SELECTCOLOR } from '../../constants/BeautyConstants';
+import { SELECTCOLOR } from '../../constants/Constants';
 import { BeautyShapeModel } from '../../models/beauty/BeautyShapeModel';
 import { BeautyDataService } from '../../service/BeautyDataService';
 import { CustomDialogCancelOrConfirm } from '../common/CustomDialog';

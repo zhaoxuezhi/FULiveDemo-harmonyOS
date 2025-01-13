@@ -1,5 +1,5 @@
 import { FUNMNumberUtil } from '@faceunity/renderkit_nama';
-import { SELECTCOLOR } from '../../constants/BeautyConstants';
+import { SELECTCOLOR } from '../../constants/Constants';
 import { BeautyFilterModel } from '../../models/beauty/BeautyFilterModel';
 import { BeautyDataService } from '../../service/BeautyDataService';
 
@@ -7,10 +7,10 @@ import { BeautyDataService } from '../../service/BeautyDataService';
 export struct BeautyFilterView {
   private viewModel = BeautyDataService.sharedInstance().filterViewModel;
   private dataArray: BeautyFilterModel[] = this.viewModel.dataArray;
-  @State @Watch('gridCurrentIndexChanged') gridCurrentIndex: number = 0;
+  @State @Watch('gridCurrentIndexChanged') gridCurrentIndex: number = this.viewModel.selectedIndex;
   @State sliderValue: number = this.dataArray[this.gridCurrentIndex].filterLevel * 100.0;
   @State sliderString: string = this.sliderValue.toString();
-  @State sliderVisibility: Visibility = Visibility.Hidden;
+  @State sliderVisibility: Visibility = this.gridCurrentIndex > 0 ? Visibility.Visible : Visibility.Hidden;
 
   build() {
     Column() {
@@ -38,7 +38,7 @@ export struct BeautyFilterView {
           this.sliderValue = value;
           this.sliderString = FUNMNumberUtil.formatNumber(value, 0, true);
           const model = this.dataArray[this.gridCurrentIndex];
-          this.viewModel.setFilterValue(model, value / 100.0);
+          this.viewModel.setFilterValue(model, value / 100.0, this.gridCurrentIndex);
         })
 
       Row() {
@@ -70,7 +70,7 @@ export struct BeautyFilterView {
 
   gridCurrentIndexChanged() {
     const model = this.dataArray[this.gridCurrentIndex];
-    this.viewModel.setFilterValue(model, model.filterLevel);
+    this.viewModel.setFilterValue(model, model.filterLevel, this.gridCurrentIndex);
   }
 }
 

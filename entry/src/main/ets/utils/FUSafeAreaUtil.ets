@@ -42,7 +42,7 @@ class FUSafeAreaUtil {
   }
 
   public setBottomBarHeight(height: number) {
-    this.bottomBarHeight = height;
+    this.bottomBarHeight = height || 30;
   }
 
   public getBottomBarHeight(): number {

@@ -2,49 +2,63 @@ import { configData, HomeItem, HomeItemGroup } from './DataConfig'
 
 @Component
 export struct ItemContainerView {
-  // @Consume('pathInfos') pathInfos: NavPathStack
+  @Require onItemClick: ((item: HomeItem) => void) | undefined = undefined
+  @State groups: HomeItemGroup[] = []
 
-  @Require onItemClick : ((item : HomeItem) => void) | undefined = undefined
-
-  private configData: HomeItemGroup[] = configData
+  aboutToAppear(): void {
+    this.groups = configData.map((group: HomeItemGroup): HomeItemGroup => {
+      const newGroup: HomeItemGroup = {
+        label: group.label,
+        style: group.style,
+        items: group.items.filter(item => item.enabled === true)
+      } as HomeItemGroup
+      return newGroup
+    }).filter(group => group.items.length > 0)
+  }
 
   build() {
-    Column({ space: 20 }) {
-      ForEach(this.configData, (group: HomeItemGroup) => {
-        Column({ space: 10 }) {
-          Row() {
-            Blank()
-              .backgroundColor('#8824c4')
-              .size({ width: 4, height: 20 })
-              .borderRadius(2)
-              .margin({ right: 10 })
-            Text(group.label)
-              .fontSize(18)
-              .fontColor(Color.White)
-              .fontWeight(FontWeight.Medium)
-          }
-          .justifyContent(FlexAlign.Start)
+    Scroll() {
+      Column() {
+        Image($r('app.media.headerBg'))
           .width('100%')
+          .height('30%')
+        ForEach(this.groups, (group: HomeItemGroup) => {
+          Column() {
+            Row() {
+              Blank()
+                .backgroundColor('#8824c4')
+                .size({ width: 4, height: 20 })
+                .borderRadius(2)
+                .margin({ right: 10 })
+              Text(group.label)
+                .fontSize(18)
+                .fontColor(Color.White)
+                .fontWeight(FontWeight.Medium)
+            }
+            .justifyContent(FlexAlign.Start)
+            .width('100%')
 
-          if (group.style === '1x3') {
-            Flex({
-              wrap: FlexWrap.Wrap,
-              justifyContent: FlexAlign.Start,
-            }) {
+            if (group.style === '1x3') {
+              Flex({
+                wrap: FlexWrap.Wrap,
+                justifyContent: FlexAlign.Start,
+              }) {
+                ForEach(group.items, (item: HomeItem) => {
+                  this.GridItem(item, 3)
+                })
+              }
+            } else {
               ForEach(group.items, (item: HomeItem) => {
-                this.GridItem(item, 3)
+                this.GridItem(item, 1)
               })
             }
-          } else {
-            ForEach(group.items, (item: HomeItem) => {
-              this.GridItem(item, 1)
-            })
           }
-        }
-      })
+          .margin(10)
+        })
+      }
     }
     .width('100%')
-    .padding(10)
+    .edgeEffect(EdgeEffect.Spring)
   }
 
   @Builder
@@ -87,10 +101,8 @@ export struct ItemContainerView {
     }
     .width(columns === 3 ? '33%' : '100%')
     .height(140)
-    .padding(10)
+    .padding(8)
     .onClick(() => {
-      // this.pathInfos.pushPath({ name: item.label })
-      // this.pathInfos.pushPath({ name: 'BeautyPage' })
       this.onItemClick?.(item)
     })
   }

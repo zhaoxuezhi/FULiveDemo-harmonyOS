@@ -1,84 +1,167 @@
 ## 示例Demo的目录结构介绍
 
 ```SQL
+main
 ├── ets
-│   ├── auth
-│   │   └── FUNMAuth.ets                           //鉴权文件
-│   ├── components                                  //自定义UI组件
-│   │   ├── beauty                                 //美颜自定义UI组件
-│   │   │   ├── BeautyFilterView.ets                        
-│   │   │   ├── BeautyShapeView.ets
-│   │   │   └── BeautySkinView.ets
-│   │   ├── common                                 //模块间通用的自定义UI组件
-│   │   │   ├── CaptureButton.ets
-│   │   │   ├── CustomDialog.ets
-│   │   │   └── FUBackButton.ets
-│   │   ├── floatComponent                         //浮窗自定义UI组件
-│   │   │   ├── FPSFloatView.ets
-│   │   │   └── FPSManager.ets
-│   │   ├── headToolBar                            //顶部工具栏自定义UI组件
-│   │   │   ├── FUHeadToolBar.ets
-│   │   │   ├── HeadToolBarController.ets
-│   │   │   ├── MorePopView.ets
-│   │   │   └── PixelBufferView.ets
-│   │   ├── home                                    //首页相关的自定义UI组件
-│   │   │   ├── DataConfig.ets
-│   │   │   └── ItemContanerView.ets
-│   │   ├── lightingView        
-│   │   │   └── LightingView.ets
-│   │   └── sticker
-│   │       └── HorizontalScrollView.ets
-│   ├── constants
-│   │   └── BeautyConstants.ets
-│   ├── entryability
-│   │   └── EntryAbility.ets
-│   ├── entrybackupability
-│   │   └── EntryBackupAbility.ets
-│   ├── models                                       //业务模型
-│   │   └── beauty                                  //美颜业务模型
-│   │       ├── BeautyFilterModel.ets
-│   │       ├── BeautyShapeModel.ets
-│   │       └── BeautySkinModel.ets
-│   ├── pages                                        //页面
-│   │   ├── AssetsPreViewPage.ets                                   
-│   │   ├── BeautyPage.ets                           //美颜页面
-│   │   ├── ImageRenderPage.ets                      //相册图片特效渲染页面
-│   │   ├── Index.ets                                //首页  
-│   │   ├── SelectLocalMediaPage.ets                 //相册图片选择页面     
-│   │   ├── StickerPage.ets                          //贴纸页面
-│   │   └── hook
-│   │       └── WithComponentLifeCycleHook.ets
-│   ├── router
-│   │   ├── RouterModel.ets                           //首页子页面配置中心
-│   │   └── RouterPages.ets
-│   ├── service
-│   │   ├── BeautyDataService.ets                     //美颜模块数据服务
-│   │   └── RenderKitService.ets                      //FUNMRenderKit服务
-│   ├── utils
-│   │   ├── AssetsUtil.ets
-│   │   ├── FUSafeAreaUtil.ets
-│   │   └── RequestPermission.ets
-│   └── viewModels                                     //页面模型
-│       └── beauty                                     //美颜模块页面模型
-│           ├── BeautyFilterViewModel.ets               
-│           ├── BeautyShapeViewModel.ets
-│           └── BeautySkinViewModel.ets
-├── module.json5
-└── resources
-    ├── base
-    │   ├── element
-    │   ├── media
-    │   └── profile
-    │       ├── backup_config.json
-    │       ├── main_pages.json
-    │       └── router_map.json                         //路由配置表
-    └── rawfile                                          
-            ├── ai_face_processor.bundle                 //AI道具文件
-            ├── face_beautification.bundle               //美颜道具文件
-            └── beauty
-                   ├── beauty_filter.json                //美颜滤镜配置文件
-                   ├── beauty_shape.json                 //美颜美型配置文件
-                   └── beauty_skin.json                  //美颜美肤配置文件
+├── auth
+│   └── FUNMAuth.ets									//鉴权文件
+├── components											 // UI组件
+│   ├── beauty											//美颜模块UI组件		
+│   │   ├── BeautyFilterView.ets
+│   │   ├── BeautyShapeView.ets
+│   │   ├── BeautySkinView.ets
+│   │   ├── BeautyView.ets
+│   │   └── BeautyViewNodeController.ets
+│   ├── common										   //模块间通用的自定义UI组件
+│   │   ├── AutoDismissToast.ets
+│   │   ├── CaptureButton.ets
+│   │   ├── CustomDialog.ets
+│   │   ├── DisplayXView.ets
+│   │   ├── FUBackButton.ets
+│   │   ├── HorizontalScrollView.ets
+│   │   ├── PageBaseView.ets
+│   │   └── VerticalColorPicker.ets
+│   ├── floatComponent								   //浮窗自定义UI组件
+│   │   └── FPSFloatView.ets
+│   ├── headToolBar									   //顶部工具栏自定义UI组件
+│   │   ├── FUHeadToolBar.ets
+│   │   ├── HeadToolBarController.ets
+│   │   ├── MorePopView.ets
+│   │   └── PixelBufferView.ets
+│   ├── home											//首页相关的自定义UI组件
+│   │   ├── DataConfig.ets
+│   │   └── ItemContanerView.ets
+│   ├── lightingView
+│   │   └── LightingView.ets
+│   ├── makeup											// 美妆模块 UI 组件
+│   │   ├── HorizontalScrollLabelView.ets
+│   │   ├── MakeUpContainView.ets
+│   │   ├── MakeupPageView.ets
+│   │   ├── MakeUpView.ets
+│   │   ├── MakeupViewNodeController.ets
+│   │   └── SubMakeupView.ets
+│   ├── media
+│   │   └── ExportVideoView.ets
+│   ├── segmentation									// 人像分割模块 UI组件
+│   │   ├── SegmentationView.ets
+│   │   └── SelectSegmentModeView.ets
+│   ├── simpleSticker								   // 哈哈镜、搞笑大头 模块UI组件
+│   │   └── SimpleStickerView.ets
+│   └── sticker											// 贴纸模块 UI 组件	
+│       ├── StickerView.ets
+│       └── StickerViewNodeController.ets
+├── constants
+│   └── Constants.ets
+├── entryability
+│   └── EntryAbility.ets
+├── entrybackupability
+│   └── EntryBackupAbility.ets
+├── models	
+│   └── beauty
+│       ├── BeautyFilterModel.ets
+│       ├── BeautyShapeModel.ets
+│       └── BeautySkinModel.ets
+├── pages												// 页面																				
+│   ├── media                                           // 本地导图渲染页面
+│   │   ├── ImageRenderPage.ets
+│   │   ├── SelectLocalMediaPage.ets
+│   │   └── VideoRenderPage.ets
+│   ├── modules										   // 模块页面
+│   │   ├── BeautyPage.ets                            // 美颜
+│   │   ├── Index.ets								  // 首页
+│   │   ├── MakeUpPage.ets							  // 美妆
+│   │   ├── SegmentationPage.ets                      // 人像分割
+│   │   ├── SimpleStickerPage.ets                     // 哈哈镜、搞笑大头
+│   │   └── StickerPage.ets                           // 贴纸
+│   └── CameraPage.ets
+├── router
+│   └── RouterModel.ets
+├── service
+│   ├── BeautyDataService.ets						  //美颜模块数据服务	
+│   ├── NodeControllerService.ets    				  //视图单例模式服务
+│   └── RenderKitService.ets                          //FUNMRenderKit服务
+├── utils
+│   ├── AssetsUtil.ets
+│   ├── CallBack.ets
+│   ├── ComonUtil.ets
+│   ├── DateTimeUtils.ets
+│   ├── FUSafeAreaUtil.ets
+│   ├── RequestPermission.ets
+│   └── ThrottleManager.ets
+├── viewModels											// 页面模型
+│   ├── beauty                                         // 美颜
+│   │   ├── BeautyFilterViewModel.ets
+│   │   ├── BeautyShapeViewModel.ets
+│   │   └── BeautySkinViewModel.ets
+│   ├── makeup                                         // 美妆
+│   │   ├── MakeUpViewModel.ets
+│   │   ├── MakeUpViewModelController.ets
+│   │   ├── SubMakeupJsonModel.ets
+│   │   └── SubMakeupViewModel.ets
+│   ├── video                                          //本地视频渲染
+│   │   └── VideoRenderViewModel.ets
+│   └── SegmentationController.ets                     // 人像分割
+└── DynamicConfigInfo.ets
+├── resources
+│   ├── base
+│   │   ├── element
+│   │   ├── media
+│   │   └── profile
+│   │       ├── backup_config.json
+│   │       ├── main_pages.json
+│   │       └── router_map.json                        //路由配置表
+│   ├── rawfile
+│   │   ├── beauty                                     //美颜配置数据
+│   │   │   ├── beauty_filter.json
+│   │   │   ├── beauty_shape.json
+│   │   │   └── beauty_skin.json
+│   │   ├── common                    
+│   │   │   ├── render_back_home@2x.png
+│   │   │   ├── render_bugly@2x.png
+│   │   │   ├── render_camera_switch@2x.png
+│   │   │   ├── render_more@2x.png
+│   │   │   ├── render_picture@2x.png
+│   │   │   ├── render_select_media@2x.png
+│   │   │   └── style_customizing_back@2x.png
+│   │   ├── distortingMirror                           // 哈哈镜模块资源 
+│   │   │   ├── bundles/
+│   │   │   └── images/
+│   │   ├── funnyBigHead                               // 搞笑大头模块资源
+│   │   │   ├── bundles/
+│   │   │   └── images/
+│   │   ├── home                                       // 首页资源
+│   │   │   ├── qingmeizhuang@2x.png
+│   │   │   ├── quanshenavatar@2x.png
+│   │   │   ├── renxiangfenge@2x.png
+│   │   │   ├── shoushishibie@2x.png
+│   │   │   └── yinyuelvjing@2x.png
+│   │   ├── lighting
+│   │   │   ├── lighting_mon@2x.png
+│   │   │   └── lighting_sun@2x.png
+│   │   ├── makeup                                     // 美妆模块资源    
+│   │   │   ├── CombinationMakeup/
+│   │   │   ├── CustomizedMakeup/
+│   │   │   ├── items/
+│   │   │   ├── others/
+│   │   │   └── subItems/
+│   │   ├── pickerImage      
+│   │   │   ├── media_picker_button_background@2x.png
+│   │   │   ├── media_picker_image_selection@2x.png
+│   │   │   └── media_picker_video_selection@2x.png
+│   │   ├── segmentation                                // 人像分割模块资源 
+│   │   │   ├── bundles/
+│   │   │   ├── images/
+│   │   │   └── segmentation.json
+│   │   ├── sticker                                     // 贴纸模块资源
+│   │   │   ├── bundles/
+│   │   │   └── images/
+│   │   ├── ai_face_processor.bundle                    //AI道具文件
+│   │   ├── ai_human_processor.bundle                   //AI道具文件
+│   │   ├── face_beautification.bundle                  //美颜道具文件 
+│   │   ├── face_makeup.bundle 
+│   │   ├── landmarks.bundle
+│   │   └── moban_bz.png
+└── module.json5
 ```
 
 ### 关键资源文件
@@ -369,7 +452,7 @@ setFilterValue(model: BeautyFilterModel, value: number) {
 }
 ```
 
-### 6、加载/移除贴纸道具
+### 6、加载/移除贴纸道具（哈哈镜、搞笑大头、人像分割 实现逻辑大致相同）
 
 ```TypeScript
 //道具贴纸示例

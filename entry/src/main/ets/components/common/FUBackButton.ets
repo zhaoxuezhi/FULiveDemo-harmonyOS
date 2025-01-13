@@ -12,7 +12,8 @@ export struct FUBackButton {
     .size({ width: 44, height: 44 })
     .margin({ left: 10 })
     .onClick(() => {
-      this.onBackAction ? this.onBackAction() : this.pathInfos.pop()
+      // note：pop({}, true) 有参数才会触发 push的 onPop 回调
+      this.onBackAction ? this.onBackAction() : this.pathInfos.pop({}, true)
     })
   }
 }
