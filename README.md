@@ -13,8 +13,4 @@
 * 替换自己的证书，/entry/src/main/ets/auth/FUNMAuth.ets 中 g_auth_package 需要替换为自己的证书信息
 
 ## 更新日志
-
-**👉 1.0.0版本**
-1. 【智能美颜】支持鸿蒙 NEXT原生适配，包括质感美肤、面部及五官微整形、多种滤镜风格），超质感美颜效果，打造高级上镜感
-2. 【AR贴纸】：支持鸿蒙 NEXT原生适配，风格多变，玩法丰富
-3. 【FUliveDemo】：鸿蒙版AR人像视频特效demo重磅上线
+[鸿蒙 Demo 版本更新文档](./CHANGELOG.md)
